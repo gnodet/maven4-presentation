@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maven 4 Presentation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f0f4f8;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .slide-content {
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+        .slide-content.transitioning {
+            opacity: 0;
+        }
+        .code-block {
+            font-family: monospace;
+            white-space: pre;
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e9ecef;
+            margin: 0.5rem 0;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            overflow-x: auto;
+        }
+        code {
+            font-family: monospace;
+            background: #f8f9fa;
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.2rem;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+    const App = () => {
+        const [currentSlide, setCurrentSlide] = React.useState(0);
+        const [isTransitioning, setIsTransitioning] = React.useState(false);
+
+        const slides = [
+            {
+                title: "Maven 4",
+                subtitle: "Why, what, how and when? 🚀",
+                author: "Guillaume Nodet",
+                email: "gnodet@redhat.com",
+                type: "cover",
+                content: [] // Add empty content array for consistency
+            },
+            {
+                title: "Why Maven 4? 🤔",
+                subtitle: "Breaking free from legacy constraints",
+                content: [
+                    "Major update after 15 years of Maven 3 (it's about time! ⏰)",
+                    "Quote from Hervé Boutemy:",
+                    "> With the Maven build schema preserved in amber, we can't evolve much: we'll stay forever with Maven 3 minor releases, unable to implement improvements that we imagine will require seriously updating the POM schema…",
+                    "Internals are frozen due to no clear API boundaries (legacy constraints! 🔒)",
+                    "A new major version is required to break out of this stasis (breaking free! 🦋)"
+                ]
+            },
+            {
+                "title": "What: Key Changes Overview 🎯",
+                "subtitle": "The big picture",
+                "content": [
+                    "Build and Consumer POM separation (clarity at last! 📋)",
+                    "New Model 4.1.0 with inference capabilities (smart builds! 🧠)",
+                    "Modern API architecture (clean slate! ✨)",
+                    "Java 17 baseline (modernized foundation! ⚡)",
+                    "Improved build features (better workflows! 🔄)"
+                ]
+            },
+            {
+                title: "Key POM Changes ⚡",
+                content: [
+                    "Build POM 🏗️",
+                    "> Full project configuration used during build time",
+                    "> Contains all build settings, plugins, and properties",
+                    "> New Model 4.1.0 with enhanced features",
+                    "> Supports inference capabilities (see next slides)",
+                    "Consumer POM 📦",
+                    "> Simplified artifact published to repositories",
+                    "> Contains only essential dependency information",
+                    "> Always uses Model 4.0.0 for compatibility",
+                    "> Automatically generated from Build POM",
+                    "Official root directory properties (no more guessing! 🎯)",
+                    "New Model 4.1.0 (see next slides! 👉)"
+                ]
+            },
+            {
+                title: "Build POM Inference Features 🧠",
+                subtitle: "Infer from the Build POM, thou shalt... ✨",
+                content: [
+                    "<code>modelVersion</code> inference from namespace (no more version tag! 🏷️)",
+                    "<code>parent</code> inference simplifies project structure (smart family tree! 🌳)",
+                    "<code>dependency</code> inference reduces POM complexity (declutter time! 🧹)",
+                    "<code>subproject</code> inference for better project management (family matters! 👨‍👩‍👧‍👦)"
+                ]
+            },
+            {
+                title: "Build POM Inference in Action 🔄",
+                content: [
+                    "Maven 3.x:",
+                    {
+                        type: "code",
+                        content:
+`<!-- parent pom.xml -->
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.example</groupId>
+    <artifactId>parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.example</groupId>
+                <artifactId>common-utils</artifactId>
+                <version>\${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <modules>
+        <module>common-utils</module>
+        <module>web-service</module>
+    </modules>
+</project>
+
+<!-- child pom.xml -->
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.example</groupId>
+        <artifactId>parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>web-service</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>com.example</groupId>
+            <artifactId>common-utils</artifactId>
+        </dependency>
+    </dependencies>
+</project>`
+                    },
+                    "Maven 4.x (with inference):",
+                    {
+                        type: "code",
+                        content:
+`<!-- parent pom.xml -->
+<project xmlns="http://maven.apache.org/POM/4.1.0">
+    <groupId>com.example</groupId>
+    <artifactId>parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+</project>
+
+<!-- child pom.xml -->
+<project xmlns="http://maven.apache.org/POM/4.1.0">
+    <parent/>
+    <artifactId>web-service</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>com.example</groupId>
+            <artifactId>common-utils</artifactId>
+        </dependency>
+    </dependencies>
+</project>`
+                    }
+                ]
+            },
+            {
+                title: "Consumer POM: A Slimmer Build Artifact 📄",
+                subtitle: "Separating build config from dependency info ✂️",
+                content: [
+                    "Build POM vs Consumer POM (original vs deployed! 🔄)",
+                    {
+                        type: "code",
+                        content:
+`<!-- Original Build POM -->
+<project xmlns="http://maven.apache.org/POM/4.1.0">
+    <modelVersion>4.1.0</modelVersion>
+    <groupId>com.example</groupId>
+    <artifactId>my-project</artifactId>
+    <version>1.0.0</version>
+
+    <!-- Properties -- inlined in Consumer POM -->
+    <properties>
+        <version.library>2.0.0</version.slf4j>
+    </properties>
+
+    <!-- Build config - stripped in Consumer POM -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!-- Preserved in Consumer POM -->
+    <dependencies>
+        <dependency>
+            <groupId>org.example</groupId>
+            <artifactId>library</artifactId>
+            <version>\${version.library}</version>
+        </dependency>
+    </dependencies>
+</project>`
+                    },
+                    "What stays in Consumer POM: (essential info! 📋)",
+                    "> Dependencies and dependency management",
+                    "> Project coordinates (groupId, artifactId, version)",
+                    "> Repository information",
+                    "What's removed: (build-only stuff! 🔨)",
+                    "> Build configuration and plugins",
+                    "> POM properties",
+                    "> Developer-specific settings",
+                    "Always uses Model 4.0.0 (ecosystem compatibility! 🤝)",
+                    "Exception: when actually using a new 4.1.0 feature (you broke it! 🤦)",
+                    "Exception: POM-type artifacts keep all info (they're special! ⭐)"
+                ]
+            },
+            {
+                title: "Model 4.1.0 Changes in Detail 🔍",
+                content: [
+                    "Project",
+                    "> <code>root</code> - marks project as root directory (no more .mvn hunting! 🏠)",
+                    "> <code>preserveModelVersion</code> - keeps version in consumer POM (version lock! 🔒)",
+                    "Profile activation",
+                    "> <code>packaging</code> - activate based on artifact type (smart choices! 📦)",
+                    "> <code>conditional</code> - use complex conditions (if this then that! 🤔)",
+                    "> <code>matches(\${os.version}, '.*aws')</code> or <code>exists('\${project.basedir}/src/**/*.xsd')</code>",
+                    "<code>modules</code> renamed to <code>subprojects</code> (modern naming! 🆕)",
+                    "Extensions get configuration element (power-up! ⚡)"
+                ]
+            },
+            {
+                title: "Build Improvements 🛠️",
+                content: [
+                    "Full CI-friendly variables support (finally! 🎊)",
+                    "Better reactor behavior with the project local repository (boom! 💥)",
+                    "Improved build resumption (never give up! 💪)",
+                    "Consistent timestamps across subprojects (tick tock! ⏰)",
+                    "Better dependency management (untangle all the things! 🧶)"
+                ]
+            },
+            {
+                title: "Runtime & Lifecycle Changes ⚙️",
+                content: [
+                    "Requires Java 17 to run Maven (level up! ⬆️)",
+                    "New 'fail on severity' parameter (catch those bugs! 🐛)",
+                    "Enhanced profile management (like a boss! 😎)",
+                    "Lifecycle changed from graph to tree (branch out! 🌳)",
+                    "Pre- and post-phase improvements (<code>before:</code> & <code>after:</code>! ↔️)",
+                    "Fine-grained phase ordering, e.g., <code>before:compile[10]</code>, <code>validate[20]</code> (perfect timing! ⏱️)"
+                ]
+            },
+            {
+                title: "BOM Improvements 📦",
+                content: [
+                    "New dedicated 'bom' packaging type (clearer than 'pom'! 🎯)",
+                    "Import BOMs with classifiers now possible (more flexibility! 🔄)",
+                    "Exclude BOM-managed dependencies (granular control! 🎛️):",
+                    "Use bomClassifier for project BOMs (best practice! ✨)",
+                    "⚠️ Warning: Same-reactor BOMs will be deprecated (use external BOMs only! 🔄)"
+                ]
+            },
+            {
+                title: "ModelParser SPI: Alternative POM Syntaxes 🔄",
+                subtitle: "Freedom to evolve beyond XML! ✨",
+                content: [
+                  "New ModelParser Service Provider Interface (evolution time! 🚀)",
+                  "Allows custom POM syntaxes via core extensions (bye bye XML-only! 👋)",
+                  "Build POM can evolve while consumer POM stays stable (best of both! 🎯)",
+                  "Example project using HOCON syntax (first alternative format! 🎉):",
+                  {
+                    type: "code",
+                    content:
+`# HOCON style configuration
+modelVersion = 4.1.0
+parent {
+    groupId = org.apache.maven.hocon.its
+    artifactId = parent
+    version = 1.0.0-SNAPSHOT
+}
+artifactId = test
+
+properties = {
+  "my.property" = foo
+  pluginVersion = 3.9
+}
+
+dependencies = [
+    # just add one dummy dependency
+    "com.typesafe:config:1.4.2"
+]`
+                  }
+                ]
+              },
+            {
+                title: "Tools & Security 🔒",
+                subtitle: "Enhanced security and developer experience",
+                content: [
+                    "Improved encryption system (Fort Knox style! 🏰)",
+                    "Maven Shell introduction (shell we begin? 🐚)",
+                    "New CLI - reused for the daemon (command and control! 🎮)"
+                ]
+            },
+            {
+                title: "How to Migrate? 🔍",
+                subtitle: "What to expect when upgrading",
+                content: [
+                    "Most Maven 3.x plugins should work out of the box (smooth sailing! 🚢)",
+                    "Plugins using Maven 2.x APIs will break (time to modernize! ⚡)",
+                    "Extensions are likely to need updates (major changes ahead! 🔄)"
+                ]
+            },
+            {
+                title: "Maven 4 API Architecture 🏗️",
+                subtitle: "Modern API design for better development",
+                content: [
+                    "Immutable objects throughout (thread-safe goodness! 🔒)",
+                    "Clear service boundaries (clean architecture! 📐)",
+                    "Hidden resolver implementation (abstraction wins! 🎯)",
+                    "Currently flagged as experimental (safety first! 🚧)",
+                    "Regular updates and fixes coming (we've got your back! 💪)"
+                ]
+            },
+            {
+                title: "When is Maven 4 Coming? ⏳",
+                subtitle: "Release timeline and stability",
+                content: [
+                    "Maven 4.0.0 is around the corner (almost there! 🎯)",
+                    "API is not frozen yet (work in progress! 🏗️)",
+                    "4.x will stabilize the API and maintain 3.x compatibility over the coming months (smooth transition! 🌊)",
+                    "5.x will probably remove Maven 3 compatibility and merge the resolver into Maven (future plans! 🔮)"
+                ]
+            },
+            {
+                title: "Thank You! 🙏",
+                subtitle: "Join us in shaping the future of Maven",
+                content: [
+                    "Get involved in the Maven community (we need you! 👥)",
+                    "> Join the mailing lists: users@maven.apache.org",
+                    "> Report issues on GitHub: github.com/apache/maven or JIRA (we're migrating)",
+                    "> Try the release candidates and provide feedback",
+                    "Questions? (let's talk! 💭)"
+                ]
+            }
+        ];
+
+        const nextSlide = () => {
+            if (currentSlide < slides.length - 1) {
+                setIsTransitioning(true);
+                setTimeout(() => {
+                    setCurrentSlide(prev => prev + 1);
+                    setIsTransitioning(false);
+                }, 500);
+            }
+        };
+
+        const prevSlide = () => {
+            if (currentSlide > 0) {
+                setIsTransitioning(true);
+                setTimeout(() => {
+                    setCurrentSlide(prev => prev - 1);
+                    setIsTransitioning(false);
+                }, 500);
+            }
+        };
+
+        React.useEffect(() => {
+            const handleKeyDown = (e) => {
+                if (e.key === 'ArrowRight') nextSlide();
+                if (e.key === 'ArrowLeft') prevSlide();
+                if (e.key >= '1' && e.key <= String(slides.length)) {
+                    setCurrentSlide(Number(e.key) - 1);
+                }
+            };
+
+            window.addEventListener('keydown', handleKeyDown);
+            return () => window.removeEventListener('keydown', handleKeyDown);
+        }, [currentSlide]);
+
+        return (
+            <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-8">
+                <div className="flex justify-between items-center mb-8">
+                    <button
+                        onClick={prevSlide}
+                        className="px-4 py-2 rounded bg-blue-500 text-white disabled:opacity-50"
+                        disabled={currentSlide === 0}
+                    >
+                        Previous
+                    </button>
+                    <div className="text-gray-500">
+                        Slide {currentSlide + 1} of {slides.length}
+                    </div>
+                    <button
+                        onClick={nextSlide}
+                        className="px-4 py-2 rounded bg-blue-500 text-white disabled:opacity-50"
+                        disabled={currentSlide === slides.length - 1}
+                    >
+                        Next
+                    </button>
+                </div>
+
+                <div className={`slide-content ${isTransitioning ? 'transitioning' : ''}`}>
+                    <h2 className="text-3xl font-bold text-center mb-2 text-blue-600">
+                        {slides[currentSlide].title}
+                    </h2>
+                    {slides[currentSlide].subtitle && (
+                        <p className="text-xl text-center mb-8 text-purple-600 italic">
+                            {slides[currentSlide].subtitle}
+                        </p>
+                    )}
+                    {slides[currentSlide].type === 'cover' && slides[currentSlide].author && (
+                        <div className="text-center mt-16">
+                            <p className="text-lg text-gray-700">{slides[currentSlide].author}</p>
+                            <p className="text-md text-gray-600">{slides[currentSlide].email}</p>
+                        </div>
+                    )}
+                    <ul className="space-y-1">
+                        {slides[currentSlide].content.map((point, index) => {
+                            if (typeof point === 'object' && point.type === 'code') {
+                                return (
+                                    <div key={index} className="code-block">
+                                        {point.content}
+                                    </div>
+                                );
+                            } else if (point.startsWith('>')) {
+                                return (
+                                <li key={index} className={`flex items-start pl-8 hover:bg-blue-50 rounded`}>
+                                    <span className="mr-2 text-blue-600">&nbsp;</span>
+                                    <span dangerouslySetInnerHTML={{ __html: point.replace('>', '→') }} />
+                                </li>
+                                );
+                            }
+                            return (
+                                <li key={index} className={`flex items-start p-3 hover:bg-blue-50 rounded`}>
+                                    <span className="mr-2 text-blue-600">●</span>
+                                    <span dangerouslySetInnerHTML={{ __html: point }} />
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </div>
+
+                <div className="flex justify-center space-x-2 mt-8">
+                    {slides.map((_, index) => (
+                        <button
+                            key={index}
+                            onClick={() => setCurrentSlide(index)}
+                            className={`w-3 h-3 rounded-full ${
+                                currentSlide === index ? 'bg-blue-600' : 'bg-gray-300'
+                            }`}
+                            aria-label={`Go to slide ${index + 1}`}
+                        />
+                    ))}
+                </div>
+            </div>
+        );
+    };
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+</script>
+</body>
+</html>
