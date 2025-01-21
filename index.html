@@ -56,8 +56,8 @@
             {
                 title: "Maven 4",
                 subtitle: "Why, what, how and when? 🚀",
-                author: "Guillaume Nodet",
-                email: "gnodet@redhat.com",
+                author: "Guillaume <span style='font-variant: small-caps'>Nodet</span>",
+                email: "<div class='flex flex-col gap-0.5'><span class='flex items-center justify-center gap-2'><img src='redhat-favicon.ico' alt='RedHat' class='w-4 h-4'/> Red Hat Distinguished Engineer - gnodet@redhat.com</span><span class='flex items-center justify-center gap-2'><img src='apache-favicon.ico' alt='Apache' class='w-4 h-4'/> ASF Member / Maven PMC Member - gnodet@apache.org</span></div>",
                 type: "cover",
                 content: [] // Add empty content array for consistency
             },
@@ -434,8 +434,8 @@ dependencies = [
                     )}
                     {slides[currentSlide].type === 'cover' && slides[currentSlide].author && (
                         <div className="text-center mt-16">
-                            <p className="text-lg text-gray-700">{slides[currentSlide].author}</p>
-                            <p className="text-md text-gray-600">{slides[currentSlide].email}</p>
+                            <p className="text-md text-gray-700" dangerouslySetInnerHTML={{ __html: slides[currentSlide].author }}/>
+                            <p className="text-md text-gray-600" dangerouslySetInnerHTML={{ __html: slides[currentSlide].email }}/>
                         </div>
                     )}
                     <ul className="space-y-1">
