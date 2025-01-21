@@ -35,6 +35,21 @@
             font-size: 0.9rem;
             line-height: 1.4;
             overflow-x: auto;
+            position: relative;
+        }
+        .code-block .copy-button {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            background: #e9ecef;
+            border-radius: 0.25rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .code-block .copy-button:hover {
+            background: #dee2e6;
         }
         code {
             font-family: monospace;
@@ -42,6 +57,28 @@
             padding: 0.1rem 0.3rem;
             border-radius: 0.2rem;
             font-size: 0.9em;
+        }
+        .keyboard-hint {
+            position: fixed;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+        .keyboard-hint.fade-out {
+            opacity: 0;
+        }
+        @media (max-width: 640px) {
+            .navigation-buttons {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
         }
     </style>
 </head>
@@ -51,6 +88,8 @@
     const App = () => {
         const [currentSlide, setCurrentSlide] = React.useState(0);
         const [isTransitioning, setIsTransitioning] = React.useState(false);
+        const [showKeyboardHint, setShowKeyboardHint] = React.useState(true);
+        const [showCopyNotification, setShowCopyNotification] = React.useState(false);
 
         const slides = [
             {
@@ -59,7 +98,7 @@
                 author: "Guillaume <span style='font-variant: small-caps'>Nodet</span>",
                 email: "<div class='flex flex-col gap-0.5'><span class='flex items-center justify-center gap-2'><img src='redhat-favicon.ico' alt='RedHat' class='w-4 h-4'/> Red Hat Distinguished Engineer - gnodet@redhat.com</span><span class='flex items-center justify-center gap-2'><img src='apache-favicon.ico' alt='Apache' class='w-4 h-4'/> ASF Member / Maven PMC Member - gnodet@apache.org</span></div>",
                 type: "cover",
-                content: [] // Add empty content array for consistency
+                content: []
             },
             {
                 title: "Why Maven 4? 🤔",
@@ -73,9 +112,9 @@
                 ]
             },
             {
-                "title": "What: Key Changes Overview 🎯",
-                "subtitle": "The big picture",
-                "content": [
+                title: "Key Changes Overview 🎯",
+                subtitle: "The big picture",
+                content: [
                     "Build and Consumer POM separation (clarity at last! 📋)",
                     "New Model 4.1.0 with inference capabilities (smart builds! 🧠)",
                     "Modern API architecture (clean slate! ✨)",
@@ -226,18 +265,7 @@
         </dependency>
     </dependencies>
 </project>`
-                    },
-                    "What stays in Consumer POM: (essential info! 📋)",
-                    "> Dependencies and dependency management",
-                    "> Project coordinates (groupId, artifactId, version)",
-                    "> Repository information",
-                    "What's removed: (build-only stuff! 🔨)",
-                    "> Build configuration and plugins",
-                    "> POM properties",
-                    "> Developer-specific settings",
-                    "Always uses Model 4.0.0 (ecosystem compatibility! 🤝)",
-                    "Exception: when actually using a new 4.1.0 feature (you broke it! 🤦)",
-                    "Exception: POM-type artifacts keep all info (they're special! ⭐)"
+                    }
                 ]
             },
             {
@@ -293,13 +321,13 @@
                 title: "ModelParser SPI: Alternative POM Syntaxes 🔄",
                 subtitle: "Freedom to evolve beyond XML! ✨",
                 content: [
-                  "New ModelParser Service Provider Interface (evolution time! 🚀)",
-                  "Allows custom POM syntaxes via core extensions (bye bye XML-only! 👋)",
-                  "Build POM can evolve while consumer POM stays stable (best of both! 🎯)",
-                  "Example project using HOCON syntax (first alternative format! 🎉):",
-                  {
-                    type: "code",
-                    content:
+                    "New ModelParser Service Provider Interface (evolution time! 🚀)",
+                    "Allows custom POM syntaxes via core extensions (bye bye XML-only! 👋)",
+                    "Build POM can evolve while consumer POM stays stable (best of both! 🎯)",
+                    "Example project using HOCON syntax (first alternative format! 🎉):",
+                    {
+                        type: "code",
+                        content:
 `# HOCON style configuration
 modelVersion = 4.1.0
 parent {
@@ -310,17 +338,17 @@ parent {
 artifactId = test
 
 properties = {
-  "my.property" = foo
-  pluginVersion = 3.9
+    "my.property" = foo
+    pluginVersion = 3.9
 }
 
 dependencies = [
     # just add one dummy dependency
     "com.typesafe:config:1.4.2"
 ]`
-                  }
+                    }
                 ]
-              },
+            },
             {
                 title: "Tools & Security 🔒",
                 subtitle: "Enhanced security and developer experience",
@@ -377,6 +405,14 @@ dependencies = [
             }
         ];
 
+        // Group slides by section for improved navigation
+        const sections = {
+            "Introduction": [0, 1],
+            "Changes & Features": [2, 3, 4, 5, 6, 7],
+            "Implementation": [8, 9, 10, 11, 12],
+            "Migration & Future": [13, 14, 15, 16]
+        };
+
         const nextSlide = () => {
             if (currentSlide < slides.length - 1) {
                 setIsTransitioning(true);
@@ -410,28 +446,52 @@ dependencies = [
             return () => window.removeEventListener('keydown', handleKeyDown);
         }, [currentSlide]);
 
+        // Hide keyboard hint after 5 seconds
+        React.useEffect(() => {
+            const timer = setTimeout(() => {
+                setShowKeyboardHint(false);
+            }, 5000);
+            return () => clearTimeout(timer);
+        }, []);
+
+        const handleCopyCode = (code) => {
+            navigator.clipboard.writeText(code);
+            setShowCopyNotification(true);
+            setTimeout(() => setShowCopyNotification(false), 2000);
+        };
+
         return (
             <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-8">
-                <div className="flex justify-between items-center mb-8">
+                {/* Progress Bar */}
+                <div className="w-full h-2 bg-gray-200 rounded-full mb-4">
+                    <div
+                        className="h-full bg-blue-600 rounded-full transition-all duration-300"
+                        style={{ width: `${((currentSlide + 1) / slides.length) * 100}%` }}
+                    />
+                </div>
+
+                {/* Navigation */}
+                <div className="flex justify-between items-center mb-8 navigation-buttons">
                     <button
                         onClick={prevSlide}
-                        className="px-4 py-2 rounded bg-blue-500 text-white disabled:opacity-50"
+                        className="px-4 py-2 rounded bg-blue-500 text-white disabled:opacity-50 hover:bg-blue-600 transition-colors"
                         disabled={currentSlide === 0}
                     >
                         Previous
                     </button>
-                    <div className="text-gray-500">
-                        Slide {currentSlide + 1} of {slides.length}
+                    <div className="text-gray-500 flex items-center gap-2">
+                        <span>Slide {currentSlide + 1} of {slides.length}</span>
                     </div>
                     <button
                         onClick={nextSlide}
-                        className="px-4 py-2 rounded bg-blue-500 text-white disabled:opacity-50"
+                        className="px-4 py-2 rounded bg-blue-500 text-white disabled:opacity-50 hover:bg-blue-600 transition-colors"
                         disabled={currentSlide === slides.length - 1}
                     >
                         Next
                     </button>
                 </div>
 
+                {/* Content */}
                 <div className={`slide-content ${isTransitioning ? 'transitioning' : ''}`}>
                     <h2 className="text-3xl font-bold text-center mb-2 text-blue-600">
                         {slides[currentSlide].title}
@@ -441,50 +501,85 @@ dependencies = [
                             {slides[currentSlide].subtitle}
                         </p>
                     )}
+
+                    {/* Cover Slide Special Case */}
                     {slides[currentSlide].type === 'cover' && slides[currentSlide].author && (
                         <div className="text-center mt-16">
-                            <p className="text-md text-gray-700" dangerouslySetInnerHTML={{ __html: slides[currentSlide].author }}/>
-                            <p className="text-md text-gray-600" dangerouslySetInnerHTML={{ __html: slides[currentSlide].email }}/>
+                            <p className="text-lg text-gray-700" dangerouslySetInnerHTML={{ __html: slides[currentSlide].author }} />
+                            <p className="text-md text-gray-600 mt-2" dangerouslySetInnerHTML={{ __html: slides[currentSlide].email }} />
                         </div>
                     )}
-                    <ul className="space-y-1">
+
+                    {/* Regular Content */}
+                    <div className="space-y-4">
                         {slides[currentSlide].content.map((point, index) => {
                             if (typeof point === 'object' && point.type === 'code') {
                                 return (
-                                    <div key={index} className="code-block">
+                                    <div key={index} className="relative code-block">
                                         {point.content}
+                                        <button
+                                            className="copy-button"
+                                            onClick={() => handleCopyCode(point.content)}
+                                        >
+                                            Copy
+                                        </button>
                                     </div>
                                 );
-                            } else if (point.startsWith('>')) {
+                            }
+                            if (point.startsWith('>')) {
                                 return (
-                                <li key={index} className={`flex items-start pl-8 hover:bg-blue-50 rounded`}>
-                                    <span className="text-gray-300">&nbsp;●&nbsp;</span>
-                                    <span dangerouslySetInnerHTML={{ __html: point.replace('>', '') }} />
-                                </li>
+                                    <div key={index} className="pl-8 text-gray-600">
+                                        <span className="text-blue-400 mr-2">○</span>
+                                        <span dangerouslySetInnerHTML={{ __html: point.replace('>', '') }} />
+                                    </div>
                                 );
                             }
                             return (
-                                <li key={index} className={`flex items-start p-3 hover:bg-blue-50 rounded`}>
-                                    <span className="mr-2 text-blue-600">●</span>
-                                    <span dangerouslySetInnerHTML={{ __html: point }} />
-                                </li>
+                                <div key={index} className="flex items-start p-2 hover:bg-blue-50 rounded transition-colors">
+                                    <span className="text-blue-600 mr-3">●</span>
+                                    <span dangerouslySetInnerHTML={{ __html: point }} className="flex-1" />
+                                </div>
                             );
                         })}
-                    </ul>
+                    </div>
                 </div>
 
-                <div className="flex justify-center space-x-2 mt-8">
-                    {slides.map((_, index) => (
-                        <button
-                            key={index}
-                            onClick={() => setCurrentSlide(index)}
-                            className={`w-3 h-3 rounded-full ${
-                                currentSlide === index ? 'bg-blue-600' : 'bg-gray-300'
-                            }`}
-                            aria-label={`Go to slide ${index + 1}`}
-                        />
-                    ))}
+                {/* Section Navigation */}
+                <div className="mt-8 border-t pt-4">
+                    <div className="flex flex-wrap justify-center gap-4">
+                        {Object.entries(sections).map(([section, slideIndices], idx) => (
+                            <div key={section} className="flex flex-col items-center">
+                                <span className="text-xs text-gray-500 mb-1">{section}</span>
+                                <div className="flex gap-1">
+                                    {slideIndices.map(index => (
+                                        <button
+                                            key={index}
+                                            onClick={() => setCurrentSlide(index)}
+                                            className={`w-3 h-3 rounded-full transition-colors ${
+                                                currentSlide === index ? 'bg-blue-600' : 'bg-gray-300 hover:bg-blue-400'
+                                            }`}
+                                            aria-label={`Go to slide ${index + 1}`}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
+
+                {/* Keyboard Navigation Hint */}
+                {showKeyboardHint && (
+                    <div className={`keyboard-hint ${!showKeyboardHint ? 'fade-out' : ''}`}>
+                        Use ← → arrows or number keys to navigate
+                    </div>
+                )}
+
+                {/* Copy Notification */}
+                {showCopyNotification && (
+                    <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg">
+                        Code copied to clipboard!
+                    </div>
+                )}
             </div>
         );
     };
