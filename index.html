@@ -35,9 +35,34 @@
             font-size: 0.9rem;
             line-height: 1.4;
             overflow-x: auto;
+            max-width: 100%;
             position: relative;
         }
-        .code-block .copy-button {
+        .code-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+            max-width: 100%;
+        }
+        .code-panel {
+            position: relative;
+            min-width: 0; /* Allows content to shrink below its minimum content size */
+        }
+        .code-panel .code-block {
+            margin: 0;
+            width: 100%;
+            overflow-x: auto;
+        }
+        .code-panel-label {
+            position: absolute;
+            top: -1.5rem;
+            left: 0;
+            font-size: 0.9rem;
+            color: #4a5568;
+            font-weight: 500;
+        }
+        .copy-button {
             position: absolute;
             top: 0.5rem;
             right: 0.5rem;
@@ -47,9 +72,15 @@
             font-size: 0.8rem;
             cursor: pointer;
             transition: background-color 0.2s;
+            z-index: 10;
         }
-        .code-block .copy-button:hover {
+        .copy-button:hover {
             background: #dee2e6;
+        }
+        @media (max-width: 768px) {
+            .code-comparison {
+                grid-template-columns: 1fr;
+            }
         }
         code {
             font-family: monospace;
@@ -153,11 +184,11 @@
                 title: "Build POM Inference in Action 🔄",
                 subtitle: "From verbose to concise: A practical comparison 📝",
                 content: [
-                    "Maven 3.x:",
                     {
-                        type: "code",
-                        content:
-`<!-- parent pom.xml -->
+                        type: "comparison",
+                        label1: "Maven 3.x",
+                        label2: "Maven 4.x (with inference)",
+                        code1: `<!-- parent pom.xml -->
 <project xmlns="http://maven.apache.org/POM/4.0.0">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.example</groupId>
@@ -194,13 +225,8 @@
             <artifactId>common-utils</artifactId>
         </dependency>
     </dependencies>
-</project>`
-                    },
-                    "Maven 4.x (with inference):",
-                    {
-                        type: "code",
-                        content:
-`<!-- parent pom.xml -->
+</project>`,
+                        code2: `<!-- parent pom.xml -->
 <project xmlns="http://maven.apache.org/POM/4.1.0">
     <groupId>com.example</groupId>
     <artifactId>parent</artifactId>
@@ -513,20 +539,51 @@ dependencies = [
                     {/* Regular Content */}
                     <div className="space-y-4">
                         {slides[currentSlide].content.map((point, index) => {
-                            if (typeof point === 'object' && point.type === 'code') {
-                                return (
-                                    <div key={index} className="relative code-block">
-                                        {point.content}
-                                        <button
-                                            className="copy-button"
-                                            onClick={() => handleCopyCode(point.content)}
-                                        >
-                                            Copy
-                                        </button>
-                                    </div>
-                                );
+                            if (typeof point === 'object') {
+                                if (point.type === 'code') {
+                                    return (
+                                        <div key={index} className="relative code-block">
+                                            {point.content}
+                                            <button
+                                                className="copy-button"
+                                                onClick={() => handleCopyCode(point.content)}
+                                            >
+                                                Copy
+                                            </button>
+                                        </div>
+                                    );
+                                } else if (point.type === 'comparison') {
+                                    return (
+                                        <div key={index} className="code-comparison">
+                                            <div className="code-panel">
+                                                <div className="code-panel-label">{point.label1}</div>
+                                                <div className="relative code-block">
+                                                    {point.code1}
+                                                    <button
+                                                        className="copy-button"
+                                                        onClick={() => handleCopyCode(point.code1)}
+                                                    >
+                                                        Copy
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div className="code-panel">
+                                                <div className="code-panel-label">{point.label2}</div>
+                                                <div className="relative code-block">
+                                                    {point.code2}
+                                                    <button
+                                                        className="copy-button"
+                                                        onClick={() => handleCopyCode(point.code2)}
+                                                    >
+                                                        Copy
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                }
                             }
-                            if (point.startsWith('>')) {
+                            if (typeof point === 'string' && point.startsWith('>')) {
                                 return (
                                     <div key={index} className="pl-8 text-gray-600">
                                         <span className="text-blue-400 mr-2">○</span>
