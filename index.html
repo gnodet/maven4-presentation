@@ -79,12 +79,12 @@
                     "Build and Consumer POM separation (clarity at last! 📋)",
                     "New Model 4.1.0 with inference capabilities (smart builds! 🧠)",
                     "Modern API architecture (clean slate! ✨)",
-                    "Java 17 baseline (modernized foundation! ⚡)",
                     "Improved build features (better workflows! 🔄)"
                 ]
             },
             {
                 title: "Key POM Changes ⚡",
+                subtitle: "Separating build and consumer concerns 📋",
                 content: [
                     "Build POM 🏗️",
                     "> Full project configuration used during build time",
@@ -112,6 +112,7 @@
             },
             {
                 title: "Build POM Inference in Action 🔄",
+                subtitle: "From verbose to concise: A practical comparison 📝",
                 content: [
                     "Maven 3.x:",
                     {
@@ -241,6 +242,7 @@
             },
             {
                 title: "Model 4.1.0 Changes in Detail 🔍",
+                subtitle: "New features and capabilities for modern builds ✨",
                 content: [
                     "Project",
                     "> <code>root</code> - marks project as root directory (no more .mvn hunting! 🏠)",
@@ -255,6 +257,7 @@
             },
             {
                 title: "Build Improvements 🛠️",
+                subtitle: "Making builds faster, smarter, and more reliable 🚀",
                 content: [
                     "Full CI-friendly variables support (finally! 🎊)",
                     "Better reactor behavior with the project local repository (boom! 💥)",
@@ -265,6 +268,7 @@
             },
             {
                 title: "Runtime & Lifecycle Changes ⚙️",
+                subtitle: "Modernizing Maven's core mechanics 🔄",
                 content: [
                     "Requires Java 17 to run Maven (level up! ⬆️)",
                     "New 'fail on severity' parameter (catch those bugs! 🐛)",
@@ -276,6 +280,7 @@
             },
             {
                 title: "BOM Improvements 📦",
+                subtitle: "Better dependency management for modern projects 🎯",
                 content: [
                     "New dedicated 'bom' packaging type (clearer than 'pom'! 🎯)",
                     "Import BOMs with classifiers now possible (more flexibility! 🔄)",
@@ -351,8 +356,12 @@ dependencies = [
                 content: [
                     "Maven 4.0.0 is around the corner (almost there! 🎯)",
                     "API is not frozen yet (work in progress! 🏗️)",
-                    "4.x will stabilize the API and maintain 3.x compatibility over the coming months (smooth transition! 🌊)",
-                    "5.x will probably remove Maven 3 compatibility and merge the resolver into Maven (future plans! 🔮)"
+                    "4.x line over the coming months (smooth transition! 🌊)",
+                    "> stabilize the API while porting plugins and extensions",
+                    "> maintain 3.x compatibility",
+                    "5.x line in the coming years (future plans! 🔮)",
+                    "> remove Maven 3 compatibility (big cleanup! 🧹)",
+                    "> merge the resolver into Maven"
                 ]
             },
             {
@@ -449,8 +458,8 @@ dependencies = [
                             } else if (point.startsWith('>')) {
                                 return (
                                 <li key={index} className={`flex items-start pl-8 hover:bg-blue-50 rounded`}>
-                                    <span className="mr-2 text-blue-600">&nbsp;</span>
-                                    <span dangerouslySetInnerHTML={{ __html: point.replace('>', '→') }} />
+                                    <span className="text-gray-300">&nbsp;●&nbsp;</span>
+                                    <span dangerouslySetInnerHTML={{ __html: point.replace('>', '') }} />
                                 </li>
                                 );
                             }
