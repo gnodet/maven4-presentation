@@ -252,10 +252,11 @@
                 title: "Consumer POM: A Slimmer Build Artifact 📄",
                 subtitle: "Separating build config from dependency info ✂️",
                 content: [
-                    "Build POM vs Consumer POM (original vs deployed! 🔄)",
                     {
-                        type: "code",
-                        content:
+                        type: "comparison",
+                        label1: "Build POM (original...)",
+                        label2: "Consumer POM (... vs deployed)",
+                        code1:
 `<!-- Original Build POM -->
 <project xmlns="http://maven.apache.org/POM/4.1.0">
     <modelVersion>4.1.0</modelVersion>
@@ -288,6 +289,21 @@
             <groupId>org.example</groupId>
             <artifactId>library</artifactId>
             <version>\${version.library}</version>
+        </dependency>
+    </dependencies>
+</project>`,
+                        code2:
+`<!-- Consumer POM -->
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.example</groupId>
+    <artifactId>my-project</artifactId>
+    <version>1.0.0</version>
+    <dependencies>
+        <dependency>
+            <groupId>org.example</groupId>
+            <artifactId>library</artifactId>
+            <version>2.0.0</version>
         </dependency>
     </dependencies>
 </project>`
